@@ -53,4 +53,3 @@ jobs:
             git add $file
             git commit --amend -m "chore: Updating key"
             git push --force
-          fi
