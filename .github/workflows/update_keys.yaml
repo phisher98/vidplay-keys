@@ -16,7 +16,7 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@v4
         with:
-          ref: keys
+          ref: main
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -41,16 +41,20 @@ jobs:
           ref: keys
           path: key_repo
 
-      - name: Update key if it differs
+      - name: Ensure keys.json exists and copy it to key_repo
         run: |
           file=keys.json
-          cd key_repo
-          echo "Old -> $(cat $file) || New -> $(cat ../$file)"
-          if [[ "$(cat $file)" != "$(cat ../$file)" ]]; then
-            cp ../$file .
-            git config --local user.email "github-actions[bot]@users.noreply.github.com"
-            git config --local user.name "github-actions[bot]"
-            git add $file
-            git commit --amend -m "chore: Updating key"
-            git push --force
+          if [ ! -f "$file" ]; then
+            echo "{}" > $file
           fi
+          mkdir -p key_repo
+          cp -f $file key_repo/
+
+      - name: Update keys.json and push changes
+        run: |
+          cd key_repo
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add keys.json
+          git commit -m "chore: Updating keys.json" || echo "No changes to commit"
+          git push
