@@ -35,6 +35,16 @@ jobs:
       - name: Get keys
         run: pnpm getkeys
 
+      - name: Debug: Print keys.json content
+        run: |
+          file=keys.json
+          if [ ! -f "$file" ]; then
+            echo "keys.json does not exist"
+          else
+            echo "keys.json content:"
+            cat keys.json
+          fi
+
       - name: Checkout keys branch
         uses: actions/checkout@v4
         with:
@@ -49,6 +59,16 @@ jobs:
           fi
           mkdir -p key_repo
           cp -f $file key_repo/
+
+      - name: Debug: Print copied keys.json content
+        run: |
+          file=key_repo/keys.json
+          if [ ! -f "$file" ]; then
+            echo "keys.json does not exist in key_repo"
+          else
+            echo "keys.json content in key_repo:"
+            cat $file
+          fi
 
       - name: Update keys.json and push changes
         run: |
