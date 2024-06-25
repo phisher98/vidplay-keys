@@ -60,7 +60,7 @@ jobs:
           mkdir -p key_repo
           cp -f $file key_repo/
 
-      - name: Debug: Print copied keys.json content
+      - name: Debug:Print copied keys.json content
         run: |
           file=key_repo/keys.json
           if [ ! -f "$file" ]; then
