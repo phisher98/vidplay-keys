@@ -16,7 +16,7 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: keys
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -32,18 +32,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Get keys
-        run: pnpm getkeys
-
-      - name: Debug:Print keys.json content
-        run: |
-          file=keys.json
-          if [ ! -f "$file" ]; then
-            echo "keys.json does not exist"
-          else
-            echo "keys.json content:"
-            cat keys.json
-          fi
+      - name: Get keys and save to file
+        run: pnpm getkeys > keys.json
 
       - name: Checkout keys branch
         uses: actions/checkout@v4
@@ -51,30 +41,16 @@ jobs:
           ref: keys
           path: key_repo
 
-      - name: Ensure keys.json exists and copy it to key_repo
+      - name: Update key if it differs
         run: |
           file=keys.json
-          if [ ! -f "$file" ]; then
-            echo "{}" > $file
-          fi
-          mkdir -p key_repo
-          cp -f $file key_repo/
-
-      - name: Debug:Print copied keys.json content
-        run: |
-          file=key_repo/keys.json
-          if [ ! -f "$file" ]; then
-            echo "keys.json does not exist in key_repo"
-          else
-            echo "keys.json content in key_repo:"
-            cat $file
-          fi
-
-      - name: Update keys.json and push changes
-        run: |
           cd key_repo
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add keys.json
-          git commit -m "chore: Updating keys.json" || echo "No changes to commit"
-          git push
+          echo "Old -> $(cat $file) || New -> $(cat ../$file)"
+          if [[ "$(cat $file)" != "$(cat ../$file)" ]]; then
+            cp ../$file .
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add $file
+            git commit --amend -m "chore: Updating key"
+            git push --force
+          fi
