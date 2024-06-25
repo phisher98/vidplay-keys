@@ -35,7 +35,7 @@ jobs:
       - name: Get keys
         run: pnpm getkeys
 
-      - name: Debug: Print keys.json content
+      - name: Debug:Print keys.json content
         run: |
           file=keys.json
           if [ ! -f "$file" ]; then
